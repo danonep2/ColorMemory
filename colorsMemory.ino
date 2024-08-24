@@ -1,7 +1,16 @@
 #include <EEPROM.h>
+
+#include <Wire.h>
+#include <Adafruit_SSD1306.h>
+#define OLED_ADDR 0x3C
+Adafruit_SSD1306 display(OLED_ADDR);
+
 int leds[] = {3, 6, 9, 12};
 int buttons[] = {2 , 5, 8, 11, 4};
 int Tone[] = {262, 196, 220, 247};
+
+int animationStage = 0;
+double dotStageTimer = 0;
 
 int record;
 
@@ -30,6 +39,13 @@ void setup()
   record = EEPROM.read(0) * 256 + EEPROM.read(1);
   Serial.print("Record atual:");
   Serial.println(record);
+
+  display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDR);
+  display.clearDisplay();
+  display.setTextColor(WHITE);
+  display.display();
+
+
 } // void setup()
 
 void loop() {
@@ -64,6 +80,43 @@ void showSequence() {
   for (int i = 0; i < sequenceSize; i++) {
     int currentColor = currentSequence[i];
     currentColor = currentColor - 48;
+
+    display.clearDisplay();
+
+    display.setCursor(0, 0);
+    display.print("O        record:");
+    display.print(record);
+
+    if (record < 10) {
+      display.print(" ");
+    }// if
+
+    display.println("  O");
+
+    display.println("O                   O");
+
+    display.print("O   Sequencia: "); //15
+
+    int sequenceSize = currentSequence.length();
+
+    if (sequenceSize < 10) {
+      display.print(" ");
+    }//if
+
+    display.print(sequenceSize);
+    display.println("   O");
+
+
+    display.print("O      prontos:");
+    if (sequenceSize - 1 < 10) {
+      display.print(" ");
+    }//if
+
+    display.print(sequenceSize -1);
+    display.println("   O");
+    
+
+    display.display();
     lightUp(currentColor, false);
   }//for
 }// void showSequence
@@ -85,23 +138,64 @@ int waitButton(bool isWaittingPlayer) {
   return -1;
 } // int waitButton
 
+void animation(int stage) {
+
+  display.clearDisplay();
+
+  display.setCursor(0, 0);
+  display.print("         record:");
+  display.println(record);
+  display.println("      Aguardando");
+  display.print("      jogador");
+
+  dotStageTimer = dotStageTimer + 0.25;
+
+  int dotStage = dotStageTimer;
+
+  if (dotStageTimer == 3.25) {
+    dotStageTimer = 0;
+  }// if
+
+  for (int i = 0; i < dotStage; i++) {
+    display.print(".");
+  }// for
+
+
+  display.println();
+
+  display.setCursor(0, stage);
+  display.println("O");
+  display.setCursor(121, 28 - stage);
+  display.println("O");
+
+
+  display.display();
+
+}// void animation();
+
 bool waitLoop(bool isWaittingPlayer) {
   if (!isWaittingPlayer) {
     return isWaittingPlayer;
   }// if
 
   char consoleInput = Serial.read();
-  if (consoleInput == 'r'){
+  if (consoleInput == 'r') {
     record = 0;
     EEPROM.write(1, 0);
     EEPROM.write(2, 0);
 
     Serial.println("Record reiniciado!");
-    }
+  }
 
   bool isLightOn = false;
   for (int count = 0; count < 1001; count++) {
     int buttonPressed = waitButton(true);
+
+    int stageOnTime = count / 37; // 37 para dividir o 1000 do timer para até 28 partes
+    if (stageOnTime != animationStage) {
+      animationStage = stageOnTime;
+      animation(animationStage);
+    } //if
 
     if (count % 200 == 0) {
       isLightOn = !isLightOn;
@@ -120,14 +214,26 @@ bool waitLoop(bool isWaittingPlayer) {
     if (!isWaittingPlayer) {
       break;
     }//if
-    delay(1);
   }// for
 
+  if (!isWaittingPlayer) {
+    delay(200);
+  }// if
   return isWaittingPlayer;
 } //bool waitLoop()
 
 
 void endMusic() {
+  display.clearDisplay();
+  display.setCursor(0,0);
+
+  display.println("O                   O");
+  display.println("O   Voce perdeu!!   O");
+  display.println("O       T-T         O");
+  display.println("O                   O");
+
+  display.display();
+  
   delay(300);
   tone(buzzer, 220, 300);
 
@@ -144,6 +250,15 @@ void endMusic() {
 }// void endMusic
 
 void breakRecord() {
+  display.clearDisplay();
+  display.setCursor(0,0);
+
+  display.println("O                   O");
+  display.println("O Record quebrado!! O");
+  display.println("O       ^w^         O");
+  display.println("O                   O");
+
+  display.display();
 
   delay(300);
   tone(buzzer, 185, 180);
@@ -179,8 +294,8 @@ bool playerAttempt() {
 
     playerSequence = playerSequence + buttonPressed;
 
-    Serial.print("Sequencia do player: ");
-    Serial.println(playerSequence);
+    //    Serial.print("Sequencia do player: ");
+    //    Serial.println(playerSequence);
 
     int lastPressedIndex = playerSequence.length() - 1;
 

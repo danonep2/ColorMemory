@@ -33,9 +33,13 @@ Pretendo colocar fotos futuramente do projeto físico
 
 # Como usar 💻
 
- 
-
  - Se você possui experiência com Arduino, não será problema para você colocar o código na placa. Mas se não for o caso, recomendo pesquisar sobre brevemente
+
+ - Caso pretenda utilizar o código com o display (`colorsMemory.ino`), as ligações do display oLED que foi utilizado são padrões do display. Utilize os pinos A4 (SDA) e A5 (SCL) do Arduino. Também precisa que você incluia a blibiotéca  `Adafruit_SSD1306.h` junto a suas depências em seu projeto para gerenciar o display
+
+  - Está disponivel também a opção de reiniciar o recorde. Basta apenas enviar "r" pelo monitor serial do Arduino e seu recorde vai ser reiniciado
+
+  - Mesmo que não utilize o display, a contagem do recorde atual vai estar disponivel no monitor serial
 
 ### Materiais:
  - 4 LED’s (uma de cada cor)
@@ -47,6 +51,16 @@ Pretendo colocar fotos futuramente do projeto físico
 Siga a imagem do circuito para colocar os componentes no lugares certos:
 
 <img src="./assets/image.png" />
+
+OBS: caso pretanda utilizar outras portas, basta apenas altera os arrays que contem as portas dos botões e LEDs e manter a ordem para cada respectivo componente
+
+``` c++
+
+int leds[] = {3, 6, 9, 12};        <<<
+int buttons[] = {2 , 5, 8, 11, 4}; <<< // Ultimo valor se refere ao botão
+int Tone[] = {262, 196, 220, 247};    //  que vai parar/iniciar o jogo
+
+```
 
 <hr>
 <div align="center">

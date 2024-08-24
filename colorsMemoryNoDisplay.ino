@@ -1,6 +1,6 @@
-// #include <EEPROM.h>
-int leds[] = { 8, 9, 10, 11};
-int buttons[] = {2 , 3, 4, 5, 6};
+#include <EEPROM.h>
+int leds[] = {3, 6, 9, 12};
+int buttons[] = {2 , 5, 8, 11, 4};
 int Tone[] = {262, 196, 220, 247};
 
 int record;
@@ -21,15 +21,15 @@ void setup()
   }
 
 
-  //if (EEPROM.read(2) == 255) {
-  //  EEPROM.write(0, 0);
-  //  EEPROM.write(1, 0);
-  //  EEPROM.write(2, 0);
-  //}
+  if (EEPROM.read(2) == 255) {
+    EEPROM.write(0, 0);
+    EEPROM.write(1, 0);
+    EEPROM.write(2, 0);
+  }
 
-  //record = EEPROM.read(0) * 256 + EEPROM.read(1);
-  //Serial.print("Record atual:");
-  //Serial.println(record);
+  record = EEPROM.read(0) * 256 + EEPROM.read(1);
+  Serial.print("Record atual:");
+  Serial.println(record);
 } // void setup()
 
 void loop() {
@@ -91,13 +91,13 @@ bool waitLoop(bool isWaittingPlayer) {
   }// if
 
   char consoleInput = Serial.read();
-  //if (consoleInput == 'r'){
-  // record = 0;
-  //  EEPROM.write(1, 0);
-  //  EEPROM.write(2, 0);
+  if (consoleInput == 'r'){
+    record = 0;
+    EEPROM.write(1, 0);
+    EEPROM.write(2, 0);
 
-  //  Serial.println("Record reiniciado!");
-  //}
+    Serial.println("Record reiniciado!");
+    }
 
   bool isLightOn = false;
   for (int count = 0; count < 1001; count++) {
@@ -189,11 +189,11 @@ bool playerAttempt() {
       currentSequence = "";
 
       if (sequenceSize > record) {
-        //Alto = sequenceSize / 256;
-        //Baixo = sequenceSize;
-        //EEPROM.write(0, Alto);
-        //EEPROM.write(1, Baixo);
-        //Serial.println(EEPROM.read(0) * 256 + EEPROM.read(1));
+        Alto = sequenceSize / 256;
+        Baixo = sequenceSize;
+        EEPROM.write(0, Alto);
+        EEPROM.write(1, Baixo);
+        Serial.println(EEPROM.read(0) * 256 + EEPROM.read(1));
 
         breakRecord();
         record = sequenceSize;
